@@ -18,7 +18,7 @@
             margin-bottom: 30px;
         }
         
-        /* Styling for the Clickable Dropdown Menus (Accordions) */
+        /* Styling for the Clickable Dropdown Menus */
         details {
             background-color: white;
             margin-bottom: 15px;
@@ -33,10 +33,9 @@
             background-color: #3498db;
             cursor: pointer;
             padding: 15px 20px;
-            list-style: none; /* Hides default arrow on some browsers */
+            list-style: none; 
             position: relative;
         }
-        /* Custom plus/dropdown indicator */
         summary::after {
             content: '▼';
             position: absolute;
@@ -50,28 +49,16 @@
             background-color: #2980b9;
         }
         
-        /* Table Styling */
-        .table-container {
-            padding: 15px;
-            overflow-x: auto; /* Adds a scrollbar if the table is too wide for the screen */
-        }
-        table {
+        /* Iframe (Embed) Styling */
+        .iframe-container {
+            padding: 0;
             width: 100%;
-            border-collapse: collapse;
+            height: 600px; /* How tall the window into your spreadsheet is */
         }
-        th, td {
-            padding: 10px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            font-size: 0.95em;
-        }
-        th {
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f9f9f9;
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
@@ -81,116 +68,45 @@
 
     <details>
         <summary>West End</summary>
-        <div class="table-container">
-            <table id="west-end-table">
-                <thead id="west-end-head"></thead>
-                <tbody id="west-end-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/1FC3H3bD-QGucif1646vNdLOeq8Lrf6qD/preview"></iframe>
         </div>
     </details>
 
     <details>
         <summary>Downtown Older Buildings</summary>
-        <div class="table-container">
-            <table id="downtown-table">
-                <thead id="downtown-head"></thead>
-                <tbody id="downtown-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/1MwBY-2tCzJmU1O_ngp4LqfzZfW4lZGbw/preview"></iframe>
         </div>
     </details>
 
     <details>
         <summary>The Leston</summary>
-        <div class="table-container">
-            <table id="leston-table">
-                <thead id="leston-head"></thead>
-                <tbody id="leston-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/1FdEhY-P4f7g0rAxCWYyJybXHDqHYSeqe/preview"></iframe>
         </div>
     </details>
 
     <details>
         <summary>Rosenthal</summary>
-        <div class="table-container">
-            <table id="rosenthal-table">
-                <thead id="rosenthal-head"></thead>
-                <tbody id="rosenthal-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/12rFEh5F8FbNqxzehpuPPI6sFbaVWe3FT/preview"></iframe>
         </div>
     </details>
 
     <details>
         <summary>Edge</summary>
-        <div class="table-container">
-            <table id="edge-table">
-                <thead id="edge-head"></thead>
-                <tbody id="edge-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/1LZz2r1pmXrSV7wgclzAVu_jOcPp_hVkk/preview"></iframe>
         </div>
     </details>
 
     <details>
         <summary>EH</summary>
-        <div class="table-container">
-            <table id="eh-table">
-                <thead id="eh-head"></thead>
-                <tbody id="eh-body"></tbody>
-            </table>
+        <div class="iframe-container">
+            <iframe src="https://drive.google.com/file/d/1am88PUSHbGuow3Et0eTk0of_b1lp-QSM/preview"></iframe>
         </div>
     </details>
-
-    <script>
-        // Fetch the data from your JSON file
-        fetch('data.json')
-            .then(response => response.json())
-            .then(data => {
-                
-                // Helper function to build tables automatically
-                function buildTable(tableData, headId, bodyId) {
-                    if (!tableData || tableData.length === 0) {
-                        document.getElementById(bodyId).innerHTML = "<tr><td>No data available for this property yet.</td></tr>";
-                        return; 
-                    }
-
-                    // Get the column names from the first row of data
-                    const columns = Object.keys(tableData[0]);
-                    
-                    // Build the header row
-                    const headElement = document.getElementById(headId);
-                    let headerHTML = '<tr>';
-                    columns.forEach(col => {
-                        headerHTML += `<th>${col}</th>`;
-                    });
-                    headerHTML += '</tr>';
-                    headElement.innerHTML = headerHTML;
-
-                    // Build the data rows
-                    const bodyElement = document.getElementById(bodyId);
-                    let bodyHTML = '';
-                    tableData.forEach(row => {
-                        bodyHTML += '<tr>';
-                        columns.forEach(col => {
-                            let cellData = row[col] !== null ? row[col] : ''; 
-                            bodyHTML += `<td>${cellData}</td>`;
-                        });
-                        bodyHTML += '</tr>';
-                    });
-                    bodyElement.innerHTML = bodyHTML;
-                }
-
-                // Call the helper function for ALL 6 locations
-                buildTable(data.west_end, 'west-end-head', 'west-end-body');
-                buildTable(data.downtown_older_buildings, 'downtown-head', 'downtown-body');
-                buildTable(data.the_leston, 'leston-head', 'leston-body');
-                buildTable(data.rosenthal, 'rosenthal-head', 'rosenthal-body');
-                buildTable(data.edge, 'edge-head', 'edge-body');
-                buildTable(data.eh, 'eh-head', 'eh-body');
-
-            })
-            .catch(error => {
-                console.error("Error loading the Excel data:", error);
-            });
-    </script>
 
 </body>
 </html>
