@@ -1,7 +1,7 @@
 name: Sync Excel to Website
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour automatically
+    - cron: '*/10 * * * *' # Runs every 10 minutes automatically
   workflow_dispatch:      # Allows you to run it manually with a button
 
 jobs:
