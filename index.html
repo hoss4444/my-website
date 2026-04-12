@@ -5,38 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Data</title>
     <style>
-        /* Basic styling to make your tables look clean and professional */
+        /* Basic styling */
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f9f9f9;
+            background-color: #f4f7f6;
             color: #333;
         }
-        h2 {
-            margin-top: 40px;
+        h1 {
+            text-align: center;
             color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        
+        /* Styling for the Clickable Dropdown Menus (Accordions) */
+        details {
+            background-color: white;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        summary {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #3498db;
+            cursor: pointer;
+            padding: 15px 20px;
+            list-style: none; /* Hides default arrow on some browsers */
+            position: relative;
+        }
+        /* Custom plus/dropdown indicator */
+        summary::after {
+            content: '▼';
+            position: absolute;
+            right: 20px;
+            font-size: 0.8em;
+        }
+        details[open] summary::after {
+            content: '▲';
+        }
+        summary:hover {
+            background-color: #2980b9;
+        }
+        
+        /* Table Styling */
+        .table-container {
+            padding: 15px;
+            overflow-x: auto; /* Adds a scrollbar if the table is too wide for the screen */
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         th, td {
-            padding: 12px 15px;
+            padding: 10px 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            font-size: 0.95em;
         }
         th {
-            background-color: #3498db;
-            color: white;
+            background-color: #ecf0f1;
+            color: #2c3e50;
             font-weight: bold;
         }
         tr:hover {
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -44,33 +79,83 @@
 
     <h1>Our Properties</h1>
 
-    <h2>West End</h2>
-    <table id="west-end-table">
-        <thead id="west-end-head"></thead>
-        <tbody id="west-end-body"></tbody>
-    </table>
+    <details>
+        <summary>West End</summary>
+        <div class="table-container">
+            <table id="west-end-table">
+                <thead id="west-end-head"></thead>
+                <tbody id="west-end-body"></tbody>
+            </table>
+        </div>
+    </details>
 
-    <h2>Downtown Older Buildings</h2>
-    <table id="downtown-table">
-        <thead id="downtown-head"></thead>
-        <tbody id="downtown-body"></tbody>
-    </table>
+    <details>
+        <summary>Downtown Older Buildings</summary>
+        <div class="table-container">
+            <table id="downtown-table">
+                <thead id="downtown-head"></thead>
+                <tbody id="downtown-body"></tbody>
+            </table>
+        </div>
+    </details>
+
+    <details>
+        <summary>The Leston</summary>
+        <div class="table-container">
+            <table id="leston-table">
+                <thead id="leston-head"></thead>
+                <tbody id="leston-body"></tbody>
+            </table>
+        </div>
+    </details>
+
+    <details>
+        <summary>Rosenthal</summary>
+        <div class="table-container">
+            <table id="rosenthal-table">
+                <thead id="rosenthal-head"></thead>
+                <tbody id="rosenthal-body"></tbody>
+            </table>
+        </div>
+    </details>
+
+    <details>
+        <summary>Edge</summary>
+        <div class="table-container">
+            <table id="edge-table">
+                <thead id="edge-head"></thead>
+                <tbody id="edge-body"></tbody>
+            </table>
+        </div>
+    </details>
+
+    <details>
+        <summary>EH</summary>
+        <div class="table-container">
+            <table id="eh-table">
+                <thead id="eh-head"></thead>
+                <tbody id="eh-body"></tbody>
+            </table>
+        </div>
+    </details>
 
     <script>
-        // 1. Fetch the data from your new JSON file
+        // Fetch the data from your JSON file
         fetch('data.json')
             .then(response => response.json())
             .then(data => {
                 
-                // 2. A helper function to build tables automatically
+                // Helper function to build tables automatically
                 function buildTable(tableData, headId, bodyId) {
-                    // If there is no data, stop here
-                    if (!tableData || tableData.length === 0) return; 
+                    if (!tableData || tableData.length === 0) {
+                        document.getElementById(bodyId).innerHTML = "<tr><td>No data available for this property yet.</td></tr>";
+                        return; 
+                    }
 
                     // Get the column names from the first row of data
                     const columns = Object.keys(tableData[0]);
                     
-                    // Build the header row (<th>)
+                    // Build the header row
                     const headElement = document.getElementById(headId);
                     let headerHTML = '<tr>';
                     columns.forEach(col => {
@@ -79,13 +164,12 @@
                     headerHTML += '</tr>';
                     headElement.innerHTML = headerHTML;
 
-                    // Build the data rows (<td>)
+                    // Build the data rows
                     const bodyElement = document.getElementById(bodyId);
                     let bodyHTML = '';
                     tableData.forEach(row => {
                         bodyHTML += '<tr>';
                         columns.forEach(col => {
-                            // Leave cell blank if the excel cell was empty
                             let cellData = row[col] !== null ? row[col] : ''; 
                             bodyHTML += `<td>${cellData}</td>`;
                         });
@@ -94,15 +178,13 @@
                     bodyElement.innerHTML = bodyHTML;
                 }
 
-                // 3. Call the helper function for your specific locations
-                // This connects your JSON nicknames to the HTML tables above
+                // Call the helper function for ALL 6 locations
                 buildTable(data.west_end, 'west-end-head', 'west-end-body');
                 buildTable(data.downtown_older_buildings, 'downtown-head', 'downtown-body');
-                
-                /* To add your other properties (the_leston, rosenthal, edge, eh),
-                  just create another <h2> and <table> up in the HTML, and then 
-                  add another buildTable() line right here! 
-                */
+                buildTable(data.the_leston, 'leston-head', 'leston-body');
+                buildTable(data.rosenthal, 'rosenthal-head', 'rosenthal-body');
+                buildTable(data.edge, 'edge-head', 'edge-body');
+                buildTable(data.eh, 'eh-head', 'eh-body');
 
             })
             .catch(error => {
