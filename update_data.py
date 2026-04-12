@@ -7,7 +7,6 @@ from googleapiclient.http import MediaIoBaseDownload
 import io
 
 # 1. Setup the "Robot User" (Service Account)
-# This pulls the long JSON key you put in GitHub Secrets
 service_account_info = json.loads(os.environ.get('GDRIVE_SERVICE_ACCOUNT_KEY'))
 creds = service_account.Credentials.from_service_account_info(service_account_info)
 service = build('drive', 'v3', credentials=creds)
@@ -37,6 +36,9 @@ for nickname, file_id in FILES_TO_SYNC.items():
     # 3. Convert the downloaded Excel file into data
     file_stream.seek(0)
     df = pd.read_excel(file_stream)
+    
+    # 🚨 THE FIX: Replace all empty Excel cells (NaN) with empty text
+    df = df.fillna("")
     
     # Store the data under its nickname
     all_data[nickname] = df.to_dict(orient='records')
