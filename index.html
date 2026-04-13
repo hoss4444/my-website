@@ -9,6 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- ScrollToPlugin to safely handle click-to-jump without freezing the mouse wheel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
 
     <style>
         body {
@@ -17,12 +19,11 @@
             color: #333333;
             margin: 0;
             overflow-x: hidden;
-            /* Hide scrollbar for IE, Edge and Firefox */
+            /* Hide scrollbar for a cinematic feel */
             -ms-overflow-style: none;  
             scrollbar-width: none;  
         }
 
-        /* Hide scrollbar for Chrome, Safari and Opera */
         body::-webkit-scrollbar {
             display: none;
         }
@@ -32,7 +33,6 @@
             position: relative;
         }
 
-        /* Perspective applied to the parent container for 3D depth */
         #sticky-hero {
             position: sticky;
             top: 0;
@@ -42,7 +42,6 @@
             perspective: 1200px; 
         }
 
-        /* Container to hold the canvas */
         #canvas-wrapper {
             position: absolute;
             top: 0;
@@ -53,12 +52,11 @@
             transform-style: preserve-3d;
         }
 
-        /* The 3D Pop: Drop-shadow and brightness filter applied to the canvas */
         #building-canvas {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1.15); /* Scaled to ensure edges don't show when floating */
+            transform: scale(1.15); 
             transform-style: preserve-3d;
             filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.5)) brightness(1.1);
         }
@@ -73,7 +71,7 @@
             align-items: center;
             animation: bounce 2s infinite;
             opacity: 0.8;
-            z-index: 40; /* Bumped above the fog */
+            z-index: 40; 
         }
 
         @keyframes bounce {
@@ -85,8 +83,8 @@
         .next-section {
             background-color: #F9F8F6;
             position: relative;
-            z-index: 40;
-            padding-bottom: 0px; /* Removed padding for full screen layout */
+            z-index: 50; 
+            /* BUG FIX: Removed 'overflow: hidden' to allow native CSS sticky stacking */
         }
 
         /* --- ELEVATOR MENU STYLES --- */
@@ -107,7 +105,7 @@
 
         .elevator-pill {
             position: absolute;
-            top: 0; /* Will be animated dynamically via GSAP */
+            top: 0; 
             left: -1px;
             width: 4px;
             height: 32px;
@@ -125,26 +123,23 @@
             transition: all 0.3s ease-out;
             cursor: pointer;
             text-decoration: none;
-            opacity: 0.45; /* CONCEPT 1: The Opacity Shift (Inactive state) */
+            opacity: 0.45; 
         }
 
         .elevator-nav-item:hover {
             opacity: 0.7;
         }
 
-        /* Numbered Index */
         .nav-num {
             font-size: 0.875rem;
             font-family: 'Inter', sans-serif;
             letter-spacing: 0.1em;
             width: 28px;
-            /* PASTEL GRADIENT INFUSION */
             background: linear-gradient(to right, #81D4B4, #A3B1E1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* The Expanding Pastel Line */
         .nav-line {
             width: 0px;
             height: 2px;
@@ -154,18 +149,15 @@
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* The Property Name */
         .nav-text {
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            /* PASTEL GRADIENT INFUSION */
             background: linear-gradient(to right, #81D4B4, #A3B1E1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* ACTIVE STATES (When scrolling or clicked) */
         .elevator-nav-item.active {
-            opacity: 1; /* CONCEPT 1: The Opacity Shift (Active state) */
+            opacity: 1; 
         }
 
         .elevator-nav-item.active .nav-num {
@@ -181,6 +173,11 @@
         .elevator-nav-item.active .nav-text {
             font-weight: 800;
             transform: translateX(4px);
+        }
+
+        /* --- VERTICAL STACKING CARDS --- */
+        .property-panel {
+            background-color: #000000;
         }
 
         /* Cinematic Full-Bleed Content */
@@ -211,27 +208,21 @@
 
     <div id="scroll-track">
         <div id="sticky-hero">
-            
-            <!-- CANVAS WRAPPER FOR FLOATING ANIMATION -->
             <div id="canvas-wrapper">
-                <!-- CANVAS WITH 3D SHADOW AND BRIGHTNESS -->
                 <canvas id="building-canvas"></canvas>
             </div>
             
-            <!-- ELEGANT SMOKE / FADE TRANSITION -->
-            <!-- Fades from transparent into the exact background color of the next section -->
             <div class="absolute bottom-0 left-0 w-full h-[40vh] bg-gradient-to-b from-transparent via-[#F9F8F6]/70 to-[#F9F8F6] z-20 pointer-events-none"></div>
 
             <div class="scroll-indicator pointer-events-none">
                 <span class="text-sm font-semibold tracking-widest uppercase mb-2 text-gray-800">Scroll Down</span>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
             </div>
-
         </div>
     </div>
 
     <!-- HERO TEXT SECTION -->
-    <div class="hero-text-container bg-[#F9F8F6] pt-10 pb-12 flex flex-col items-center justify-center text-center px-6 relative z-40">
+    <div class="hero-text-container bg-[#F9F8F6] h-screen flex flex-col items-center justify-center text-center px-6 relative z-30" style="position: sticky; top: 0;">
         <h4 class="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4 drop-shadow-sm">Welcome to the Portal</h4>
         <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-8 text-gray-900 drop-shadow-sm">
             Building <br>
@@ -240,7 +231,6 @@
         <p class="text-xl text-gray-700 mb-10 max-w-2xl font-medium">
             A secure, automated environment for our property management team.
         </p>
-        <!-- Wrapping the button so GSAP doesn't break its hover tailwind scale class -->
         <div class="hero-btn-wrapper">
             <button class="bg-[#222222] text-white px-10 py-4 rounded-full text-lg font-semibold hover:bg-black transition shadow-2xl hover:scale-105 duration-300">
                 View Properties
@@ -248,152 +238,154 @@
         </div>
     </div>
 
-    <!-- OUR PROPERTIES: SPLIT-SCREEN STICKY ELEVATOR -->
-    <div class="next-section w-full flex flex-col md:flex-row relative">
+    <!-- OUR PROPERTIES: NATIVE STICKY STACKING -->
+    <!-- Removed forced height constraints to allow native scrolling -->
+    <div class="next-section w-full flex flex-col md:flex-row relative z-50 bg-[#F9F8F6] shadow-[0_-20px_50px_rgba(0,0,0,0.15)]">
         
-        <!-- LEFT PANEL: Sticky Elevator Index -->
-        <!-- Stays locked in place on desktop while right side scrolls -->
-        <div class="w-full md:w-[35%] lg:w-[30%] bg-[#F9F8F6] md:h-screen md:sticky top-0 flex flex-col justify-center px-8 md:px-16 py-12 z-50 border-r border-gray-200/50 shadow-[10px_0_30px_rgba(0,0,0,0.03)]">
+        <!-- LEFT PANEL: Static Elevator Index -->
+        <div class="w-full h-[40vh] md:h-screen md:sticky top-0 md:w-[35%] lg:w-[30%] flex flex-col justify-center z-50 border-b md:border-b-0 md:border-r border-gray-200/50">
             
-            <h2 class="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-sm">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#81D4B4] to-[#A3B1E1]">Our Properties</span>
-            </h2>
-            <p class="text-sm text-gray-500 font-medium mb-12">Select a location to jump to its dashboard.</p>
-            
-            <!-- NEW ELEVATOR TRACK AND INDEX -->
-            <div class="elevator-nav-container">
-                <div class="elevator-track"></div>
-                <div class="elevator-pill" id="elevator-pill"></div>
+            <div class="left-panel-content px-8 md:px-16 py-6 md:py-12 flex flex-col justify-center h-full">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-sm">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#81D4B4] to-[#A3B1E1]">Our Properties</span>
+                </h2>
+                <p class="text-sm text-gray-500 font-medium mb-12">Select a location to jump to its dashboard.</p>
                 
-                <nav class="flex flex-col gap-6" id="elevator-menu">
-                    <a href="#prop-edmonton" class="elevator-nav-item active">
-                        <span class="nav-num">01</span><div class="nav-line"></div><span class="nav-text">Edmonton House</span>
-                    </a>
-                    <a href="#prop-leston" class="elevator-nav-item">
-                        <span class="nav-num">02</span><div class="nav-line"></div><span class="nav-text"><span class="font-normal lowercase text-xl tracking-tight">the</span> Leston</span>
-                    </a>
-                    <a href="#prop-legacy" class="elevator-nav-item">
-                        <span class="nav-num">03</span><div class="nav-line"></div><span class="nav-text">Legacy Towers</span>
-                    </a>
-                    <a href="#prop-edgemont" class="elevator-nav-item">
-                        <span class="nav-num">04</span><div class="nav-line"></div><span class="nav-text">Edgemont</span>
-                    </a>
-                    <a href="#prop-rosenthal" class="elevator-nav-item">
-                        <span class="nav-num">05</span><div class="nav-line"></div><span class="nav-text">Rosenthal</span>
-                    </a>
-                    <a href="#prop-westend" class="elevator-nav-item">
-                        <span class="nav-num">06</span><div class="nav-line"></div><span class="nav-text">West End</span>
-                    </a>
-                </nav>
+                <div class="elevator-nav-container">
+                    <div class="elevator-track"></div>
+                    <div class="elevator-pill" id="elevator-pill"></div>
+                    
+                    <nav class="flex flex-col gap-6" id="elevator-menu">
+                        <a href="#prop-edmonton" class="elevator-nav-item active">
+                            <span class="nav-num">01</span><div class="nav-line"></div><span class="nav-text">Edmonton House</span>
+                        </a>
+                        <a href="#prop-leston" class="elevator-nav-item">
+                            <span class="nav-num">02</span><div class="nav-line"></div><span class="nav-text"><span class="font-normal lowercase text-xl tracking-tight">the</span> Leston</span>
+                        </a>
+                        <a href="#prop-legacy" class="elevator-nav-item">
+                            <span class="nav-num">03</span><div class="nav-line"></div><span class="nav-text">Legacy Towers</span>
+                        </a>
+                        <a href="#prop-edgemont" class="elevator-nav-item">
+                            <span class="nav-num">04</span><div class="nav-line"></div><span class="nav-text">Edgemont</span>
+                        </a>
+                        <a href="#prop-rosenthal" class="elevator-nav-item">
+                            <span class="nav-num">05</span><div class="nav-line"></div><span class="nav-text">Rosenthal</span>
+                        </a>
+                        <a href="#prop-westend" class="elevator-nav-item">
+                            <span class="nav-num">06</span><div class="nav-line"></div><span class="nav-text">West End</span>
+                        </a>
+                    </nav>
+                </div>
             </div>
         </div>
 
-        <!-- RIGHT PANEL: Full-Screen Property Images -->
-        <div class="w-full md:w-[65%] lg:w-[70%] bg-black">
+        <!-- RIGHT PANEL: Native CSS Vertical Stacking Cards -->
+        <div class="right-panel-wrapper w-full md:w-[65%] lg:w-[70%] relative z-40 bg-black">
             
             <!-- Property 1 -->
-            <div id="prop-edmonton" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/but_3260-1.jpg" alt="Edmonton House" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <!-- The 'sticky top-0' class powers the native stacking -->
+            <div id="prop-edmonton" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/but_3260-1.jpg" alt="Edmonton House" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edmonton House</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edmonton House</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Property 2 -->
-            <div id="prop-leston" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/Leston_HERO_1107e6d25b.png" alt="the Leston" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <div id="prop-leston" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/Leston_HERO_1107e6d25b.png" alt="the Leston" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight"><span class="font-normal text-gray-300 lowercase tracking-normal">the</span> Leston</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight"><span class="font-normal text-gray-300 lowercase tracking-normal">the</span> Leston</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Property 3 -->
-            <div id="prop-legacy" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/0_HERO_ff480f8c0b-scaled.jpg" alt="Legacy Towers" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <div id="prop-legacy" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/0_HERO_ff480f8c0b-scaled.jpg" alt="Legacy Towers" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Legacy Towers</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Legacy Towers</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Property 4 -->
-            <div id="prop-edgemont" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/edgemont_e6ed95e47e.jpeg" alt="Edgemont" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <div id="prop-edgemont" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/edgemont_e6ed95e47e.jpeg" alt="Edgemont" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edgemont</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edgemont</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Property 5 -->
-            <div id="prop-rosenthal" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/5_d2c301a09c.jpeg" alt="Rosenthal" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <div id="prop-rosenthal" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/5_d2c301a09c.jpeg" alt="Rosenthal" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Rosenthal</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Rosenthal</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Property 6 -->
-            <div id="prop-westend" class="property-panel w-full h-screen relative group overflow-hidden cursor-pointer">
-                <img src="https://triaventis.ca/wp-content/uploads/2026/04/IMG_3943_2831082f8d.jpeg" alt="West End" class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000 ease-out z-0 opacity-80 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none"></div>
+            <div id="prop-westend" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/IMG_3943_2831082f8d.jpeg" alt="West End" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
                 
-                <div class="absolute bottom-0 left-0 w-full p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
-                    <h3 class="text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">West End</h3>
-                    <p class="text-gray-300 text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">West End</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
                     
-                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action pointer-events-auto w-max">
-                        <span class="mr-4 tracking-wide text-lg">View Data</span>
-                        <div class="magnetic-target p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-                            <svg class="magnetic-arrow w-6 h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                         </div>
                     </div>
                 </div>
@@ -402,8 +394,14 @@
         </div>
     </div>
 
+    <!-- Spacer to ensure you can scroll all the way through the cards naturally -->
+    <div class="h-screen bg-[#F9F8F6]"></div>
+
     <script>
-        gsap.registerPlugin(ScrollTrigger);
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+        
+        // Prevents browser UI changes from dynamically triggering massive recalculation flashes
+        ScrollTrigger.config({ ignoreMobileResize: true });
 
         const canvas = document.getElementById("building-canvas");
         const context = canvas.getContext("2d");
@@ -443,7 +441,6 @@
             }
         });
 
-        // 1. Frame scrubbing
         tl.to(buildingState, {
             frame: frameCount - 1,
             snap: "frame", 
@@ -451,7 +448,6 @@
             onUpdate: render 
         }, 0);
 
-        // 2. Zoom Effect
         tl.to(canvas, {
             scale: 1.3,
             ease: "none"
@@ -471,46 +467,56 @@
             clearProps: "all"
         });
 
-        // --- STICKY ELEVATOR MENU ENGINE ---
-        const panels = gsap.utils.toArray('.property-panel');
+        // --- THE NATIVE STICKY STACKING ENGINE (100% Free Flowing) ---
+        const propertyPanels = gsap.utils.toArray('.property-panel');
         const navItems = gsap.utils.toArray('.elevator-nav-item');
         const pill = document.getElementById('elevator-pill');
 
-        // 1. Sync scroll position with the left menu highlights
-        panels.forEach((panel, i) => {
+        let currentIndex = -1;
+        function updateMenu(index) {
+            if (currentIndex !== index) {
+                currentIndex = index;
+                navItems.forEach(nav => nav.classList.remove('active'));
+                navItems[index].classList.add('active');
+
+                const itemTop = navItems[index].offsetTop;
+                const itemHeight = navItems[index].offsetHeight;
+                const pillHeight = pill.offsetHeight;
+                const targetY = itemTop + (itemHeight / 2) - (pillHeight / 2);
+                
+                gsap.to(pill, {
+                    top: targetY,
+                    duration: 0.5,
+                    ease: "back.out(1.5)" 
+                });
+            }
+        }
+        
+        updateMenu(0);
+
+        // This replaces the strict GSAP Timeline. It just listens as the native browser scroll flows past.
+        propertyPanels.forEach((panel, i) => {
             ScrollTrigger.create({
                 trigger: panel,
-                start: "top center", // Triggers when the top of the image hits the middle of your screen
+                start: "top center", // Triggers when the top of the card passes the middle of the screen
                 end: "bottom center",
                 onToggle: self => {
                     if (self.isActive) {
-                        // Remove active class from all
-                        navItems.forEach(nav => nav.classList.remove('active'));
-                        // Add active class to the current one in view
-                        navItems[i].classList.add('active');
-
-                        // Move the track pill dynamically
-                        const itemTop = navItems[i].offsetTop;
-                        const itemHeight = navItems[i].offsetHeight;
-                        const pillHeight = pill.offsetHeight;
-                        const targetY = itemTop + (itemHeight / 2) - (pillHeight / 2);
-                        
-                        gsap.to(pill, {
-                            top: targetY,
-                            duration: 0.5,
-                            ease: "back.out(1.5)" // Gives it a subtle, physical "bounce" as it locks into place
-                        });
+                        updateMenu(i);
                     }
                 }
             });
         });
 
-        // 2. Smooth Scroll Jump when clicking a menu item
+        // Click-to-Jump functionality mapping directly to the panel's native document position
         navItems.forEach((nav, i) => {
             nav.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Buttery smooth native scrolling to the targeted property
-                panels[i].scrollIntoView({ behavior: 'smooth' });
+                gsap.to(window, {
+                    scrollTo: { y: propertyPanels[i], autoKill: true },
+                    duration: 0.8,
+                    ease: "power2.inOut"
+                });
             });
         });
 
@@ -548,8 +554,6 @@
                 });
             });
         });
-
-        window.addEventListener('resize', render);
     </script>
 </body>
 </html>
