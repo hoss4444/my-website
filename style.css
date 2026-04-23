@@ -1,7 +1,7 @@
 :root {
     --brand-color: #000000;
     --text-color: #ffffff;
-    --bg-color: #000000;
+    --bg-color: #1A1A1A; /* Dark Charcoal */
     --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -54,6 +54,7 @@ main > * {
 h1 {
     font-size: 2.5rem;
     margin-bottom: 1rem;
+    font-weight: 700; /* Bold Sans-Serif */
 }
 
 p {
