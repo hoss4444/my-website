@@ -1,5 +1,6 @@
 name: PR Preview
 
+# Automated Preview Workflow for Pull Requests
 on:
   pull_request:
     types: [opened, synchronize, reopened]
