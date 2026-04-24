@@ -23,3 +23,4 @@ jobs:
           action: auto
           comment: true
           pages-base-url: sheherasally.me
+          pages-base-url: https://sheherasally.me
