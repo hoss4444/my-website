@@ -22,3 +22,4 @@ jobs:
           umbrella-dir: previews
           action: auto
           comment: true
+          pages-base-url: sheherasally.me
