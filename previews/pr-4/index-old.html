@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management - Hero Prototype</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9F8F6;
+            color: #333333;
+            margin: 0;
+            overflow-x: hidden;
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        #scroll-track {
+            height: 400vh;
+            position: relative;
+        }
+
+        #sticky-hero {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            perspective: 1200px; 
+        }
+
+        #canvas-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            transform-style: preserve-3d;
+        }
+
+        #building-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.15); 
+            transform-style: preserve-3d;
+            filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.5)) brightness(1.1);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: bounce 2s infinite;
+            opacity: 0.8;
+            z-index: 40; 
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-15px) translateX(-50%); }
+            60% { transform: translateY(-7px) translateX(-50%); }
+        }
+
+        .next-section {
+            background-color: #F9F8F6;
+            position: relative;
+            z-index: 50; 
+            /* Added will-change to optimize the new cinematic blur/scale effect */
+            will-change: transform, filter;
+        }
+
+        /* --- ELEVATOR MENU STYLES --- */
+        .elevator-nav-container {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .elevator-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #E5E7EB;
+            border-radius: 2px;
+        }
+
+        .elevator-pill {
+            position: absolute;
+            top: 0; 
+            left: -1px;
+            width: 4px;
+            height: 32px;
+            background: linear-gradient(to bottom, #81D4B4, #A3B1E1);
+            border-radius: 4px;
+            box-shadow: 0 0 12px rgba(129, 212, 180, 0.6);
+            z-index: 10;
+        }
+
+        .elevator-nav-item {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem; 
+            font-weight: 600;
+            transition: all 0.3s ease-out;
+            cursor: pointer;
+            text-decoration: none;
+            opacity: 0.45; 
+        }
+
+        .elevator-nav-item:hover {
+            opacity: 0.7;
+        }
+
+        .nav-num {
+            font-size: 0.875rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.1em;
+            width: 28px;
+            background: linear-gradient(to right, #81D4B4, #A3B1E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-line {
+            width: 0px;
+            height: 2px;
+            background: linear-gradient(to right, #81D4B4, #A3B1E1);
+            margin-right: 0;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-text {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            background: linear-gradient(to right, #81D4B4, #A3B1E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .elevator-nav-item.active {
+            opacity: 1; 
+        }
+
+        .elevator-nav-item.active .nav-num {
+            font-weight: 800;
+        }
+
+        .elevator-nav-item.active .nav-line {
+            width: 40px;
+            margin-right: 16px;
+            opacity: 1;
+        }
+
+        .elevator-nav-item.active .nav-text {
+            font-weight: 800;
+            transform: translateX(4px);
+        }
+
+        /* --- VERTICAL STACKING CARDS --- */
+        .property-panel {
+            background-color: #000000;
+            will-change: transform;
+        }
+
+        .card-content {
+            transform: translateY(2rem);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .card-action {
+            opacity: 0;
+            transform: translateY(1rem);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .property-panel:hover .card-content {
+            transform: translateY(0);
+        }
+        
+        .property-panel:hover .card-action {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.1s;
+        }
+
+        /* --- MINIMALIST BANNER STYLES --- */
+        .banner-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .banner-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .banner-btn:hover::before {
+            left: 100%;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div id="scroll-track">
+        <div id="sticky-hero">
+            <div id="canvas-wrapper">
+                <canvas id="building-canvas"></canvas>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 w-full h-[40vh] bg-gradient-to-b from-transparent via-[#F9F8F6]/70 to-[#F9F8F6] z-20 pointer-events-none"></div>
+
+            <div class="scroll-indicator pointer-events-none">
+                <span class="text-sm font-semibold tracking-widest uppercase mb-2 text-gray-800">Scroll Down</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO TEXT SECTION -->
+    <div class="hero-text-container bg-[#F9F8F6] h-screen flex flex-col items-center justify-center text-center px-6 relative z-30" style="position: sticky; top: 0;">
+        <h4 class="text-sm font-bold tracking-widest text-gray-500 uppercase mb-4 drop-shadow-sm">Welcome to the Portal</h4>
+        <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-8 text-gray-900 drop-shadow-sm">
+            Building <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#81D4B4] to-[#A3B1E1]">Better Data.</span>
+        </h1>
+        <p class="text-xl text-gray-700 mb-10 max-w-2xl font-medium">
+            A secure, automated environment for our property management team.
+        </p>
+        <div class="hero-btn-wrapper">
+            <button class="bg-[#222222] text-white px-10 py-4 rounded-full text-lg font-semibold hover:bg-black transition shadow-2xl hover:scale-105 duration-300">
+                View Properties
+            </button>
+        </div>
+    </div>
+
+    <!-- OUR PROPERTIES: NATIVE STICKY STACKING -->
+    <div class="next-section w-full flex flex-col md:flex-row relative z-50 bg-[#F9F8F6] shadow-[0_-20px_50px_rgba(0,0,0,0.15)]">
+        
+        <!-- LEFT PANEL: Static Elevator Index -->
+        <div class="w-full h-[40vh] md:h-screen md:sticky top-0 md:w-[35%] lg:w-[30%] flex flex-col justify-center z-50 border-b md:border-b-0 md:border-r border-gray-200/50">
+            
+            <div class="left-panel-content px-8 md:px-16 py-6 md:py-12 flex flex-col justify-center h-full">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-sm">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#81D4B4] to-[#A3B1E1]">Our Properties</span>
+                </h2>
+                <p class="text-sm text-gray-500 font-medium mb-12">Select a location to jump to its dashboard.</p>
+                
+                <div class="elevator-nav-container">
+                    <div class="elevator-track"></div>
+                    <div class="elevator-pill" id="elevator-pill"></div>
+                    
+                    <nav class="flex flex-col gap-6" id="elevator-menu">
+                        <a href="#prop-edmonton" class="elevator-nav-item active">
+                            <span class="nav-num">01</span><div class="nav-line"></div><span class="nav-text">Edmonton House</span>
+                        </a>
+                        <a href="#prop-leston" class="elevator-nav-item">
+                            <span class="nav-num">02</span><div class="nav-line"></div><span class="nav-text"><span class="font-normal lowercase text-xl tracking-tight">the</span> Leston</span>
+                        </a>
+                        <a href="#prop-legacy" class="elevator-nav-item">
+                            <span class="nav-num">03</span><div class="nav-line"></div><span class="nav-text">Legacy Towers</span>
+                        </a>
+                        <a href="#prop-edgemont" class="elevator-nav-item">
+                            <span class="nav-num">04</span><div class="nav-line"></div><span class="nav-text">Edgemont</span>
+                        </a>
+                        <a href="#prop-rosenthal" class="elevator-nav-item">
+                            <span class="nav-num">05</span><div class="nav-line"></div><span class="nav-text">Rosenthal</span>
+                        </a>
+                        <a href="#prop-westend" class="elevator-nav-item">
+                            <span class="nav-num">06</span><div class="nav-line"></div><span class="nav-text">West End</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Native CSS Vertical Stacking Cards -->
+        <div class="right-panel-wrapper w-full md:w-[65%] lg:w-[70%] relative z-40 bg-black">
+            
+            <!-- Property 1 -->
+            <div id="prop-edmonton" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/but_3260-1.jpg" alt="Edmonton House" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edmonton House</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 2 -->
+            <div id="prop-leston" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/Leston_HERO_1107e6d25b.png" alt="the Leston" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight"><span class="font-normal text-gray-300 lowercase tracking-normal">the</span> Leston</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 3 -->
+            <div id="prop-legacy" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/0_HERO_ff480f8c0b-scaled.jpg" alt="Legacy Towers" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Legacy Towers</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 4 -->
+            <div id="prop-edgemont" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/edgemont_e6ed95e47e.jpeg" alt="Edgemont" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Edgemont</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 5 -->
+            <div id="prop-rosenthal" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/5_d2c301a09c.jpeg" alt="Rosenthal" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">Rosenthal</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#81D4B4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property 6 -->
+            <div id="prop-westend" class="property-panel sticky top-0 w-full h-[60vh] md:h-screen overflow-hidden cursor-pointer shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+                <img src="https://triaventis.ca/wp-content/uploads/2026/04/IMG_3943_2831082f8d.jpeg" alt="West End" class="absolute inset-0 w-full h-full object-cover opacity-80 z-0">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 pointer-events-none"></div>
+                
+                <div class="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 flex flex-col justify-end h-full card-content pointer-events-none">
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">West End</h3>
+                    <p class="text-gray-300 text-base md:text-lg font-medium mb-8 drop-shadow">Data Synced &bull; Auto-updating</p>
+                    
+                    <div class="magnetic-wrapper flex items-center text-white font-semibold card-action w-max pointer-events-auto">
+                        <span class="mr-4 tracking-wide text-base md:text-lg">View Data</span>
+                        <div class="magnetic-target p-3 md:p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                            <svg class="magnetic-arrow w-5 h-5 md:w-6 md:h-6 text-[#A3B1E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NEW SECTION: MINIMALIST BANNER (Award-Winning Transition Upgrade) -->
+    <!-- Added: massive border radius, negative margin overlap, and border rim light -->
+    <div class="global-resources-section w-full py-32 md:py-48 bg-gradient-to-b from-[#F9F8F6] to-[#E8F6F1] relative z-[60] flex flex-col items-center justify-center text-center px-6 shadow-[0_-40px_80px_rgba(0,0,0,0.4)] overflow-hidden -mt-12 md:-mt-24 rounded-t-[40px] md:rounded-t-[80px] border-t border-white">
+        
+        <div class="relative z-10 max-w-3xl flex flex-col items-center">
+            <span class="text-xs font-bold tracking-[0.2em] text-gray-500 uppercase mb-6 flex items-center gap-3">
+                <span class="w-8 h-[1px] bg-gray-300"></span>
+                Global Resources
+                <span class="w-8 h-[1px] bg-gray-300"></span>
+            </span>
+            
+            <h2 class="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight mb-8 leading-tight">
+                Master the <br class="md:hidden">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#81D4B4] to-[#A3B1E1]">Workflow.</span>
+            </h2>
+            
+            <p class="text-lg md:text-xl text-gray-600 mb-12 font-medium max-w-2xl leading-relaxed">
+                Access company-wide Standard Operating Procedures, software video tutorials, and onboarding materials in the central hub.
+            </p>
+            
+            <!-- Highly Styled CTA Button -->
+            <a href="#" class="banner-btn group relative inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white transition-all duration-300 bg-[#222222] rounded-full hover:scale-105 shadow-xl hover:shadow-[0_0_40px_rgba(129,212,180,0.3)]">
+                <span class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#81D4B4] to-[#A3B1E1] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"></span>
+                <span class="relative flex items-center gap-3 text-white transition-colors duration-300">
+                    Enter Training Center
+                    <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Final Footer Spacer -->
+    <div class="w-full py-10 bg-[#E8F6F1] text-center border-t border-[#81D4B4]/20 relative z-[60]">
+        <p class="text-gray-500 text-xs font-mono tracking-widest uppercase leading-loose md:leading-relaxed px-4">
+            &copy; <span id="current-year"></span> Shehera Sally
+            <span class="hidden md:inline mx-2">|</span><br class="md:hidden">
+            Digital experience by <a href="https://www.hossgroup.ca" target="_blank" rel="noopener noreferrer" class="font-bold text-gray-800 hover:text-[#81D4B4] transition-colors underline decoration-[#81D4B4]/50 underline-offset-4">Hoss Design Group</a>
+        </p>
+    </div>
+
+    <script>
+        // Auto-update footer year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+        
+        ScrollTrigger.config({ ignoreMobileResize: true });
+
+        const canvas = document.getElementById("building-canvas");
+        const context = canvas.getContext("2d");
+
+        const frameCount = 8;
+        const currentFrame = index => `https://triaventis.ca/wp-content/uploads/2026/04/ezgif-frame-00${index + 1}.png`;
+
+        const images = [];
+        const buildingState = { frame: 0 };
+
+        for (let i = 0; i < frameCount; i++) {
+            const img = new Image();
+            img.src = currentFrame(i);
+            images.push(img);
+        }
+
+        images[0].onload = () => {
+            canvas.width = images[0].naturalWidth || 1920;
+            canvas.height = images[0].naturalHeight || 1080;
+            render();
+        };
+
+        function render() {
+            if (images[buildingState.frame]) {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(images[buildingState.frame], 0, 0);
+            }
+        }
+
+        // --- THE 3D SCROLL TIMELINE ---
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#scroll-track",
+                start: "top top",      
+                end: "bottom bottom",  
+                scrub: 1,              
+            }
+        });
+
+        tl.to(buildingState, {
+            frame: frameCount - 1,
+            snap: "frame", 
+            ease: "none",  
+            onUpdate: render 
+        }, 0);
+
+        tl.to(canvas, {
+            scale: 1.3,
+            ease: "none"
+        }, 0);
+
+        // --- TEXT REVEAL ON SCROLL ---
+        gsap.from(".hero-text-container > h4, .hero-text-container > h1, .hero-text-container > p, .hero-btn-wrapper", {
+            scrollTrigger: {
+                trigger: ".hero-text-container",
+                start: "top 85%", 
+            },
+            y: 40,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "power2.out",
+            clearProps: "all"
+        });
+
+        // --- THE NATIVE STICKY STACKING ENGINE ---
+        const propertyPanels = gsap.utils.toArray('.property-panel');
+        const navItems = gsap.utils.toArray('.elevator-nav-item');
+        const pill = document.getElementById('elevator-pill');
+
+        let currentIndex = -1;
+        function updateMenu(index) {
+            if (currentIndex !== index) {
+                currentIndex = index;
+                navItems.forEach(nav => nav.classList.remove('active'));
+                navItems[index].classList.add('active');
+
+                const itemTop = navItems[index].offsetTop;
+                const itemHeight = navItems[index].offsetHeight;
+                const pillHeight = pill.offsetHeight;
+                const targetY = itemTop + (itemHeight / 2) - (pillHeight / 2);
+                
+                gsap.to(pill, {
+                    top: targetY,
+                    duration: 0.5,
+                    ease: "back.out(1.5)" 
+                });
+            }
+        }
+        
+        updateMenu(0);
+
+        propertyPanels.forEach((panel, i) => {
+            ScrollTrigger.create({
+                trigger: panel,
+                start: "top center", 
+                end: "bottom center",
+                onToggle: self => {
+                    if (self.isActive) {
+                        updateMenu(i);
+                    }
+                }
+            });
+        });
+
+        navItems.forEach((nav, i) => {
+            nav.addEventListener('click', (e) => {
+                e.preventDefault();
+                gsap.to(window, {
+                    scrollTo: { y: propertyPanels[i], autoKill: true },
+                    duration: 0.8,
+                    ease: "power2.inOut"
+                });
+            });
+        });
+
+        // --- AWARD-WINNING TRANSITION (CINEMATIC PUSH-BACK) ---
+        // Removed the aggressive brightness drop to prevent the harsh black-out effect,
+        // relying purely on an elegant depth-of-field blur.
+        gsap.to(".next-section", {
+            scrollTrigger: {
+                trigger: ".global-resources-section",
+                start: "top bottom", 
+                end: "top top",      
+                scrub: true
+            },
+            scale: 0.92,
+            filter: "blur(12px)", 
+            transformOrigin: "bottom center", 
+            ease: "power1.inOut"
+        });
+
+        // --- MAGNETIC ARROW PHYSICS INTERACTION (Property Cards) ---
+        document.querySelectorAll('.magnetic-wrapper').forEach(wrapper => {
+            const target = wrapper.querySelector('.magnetic-target');
+            const arrow = wrapper.querySelector('.magnetic-arrow');
+            
+            wrapper.addEventListener('mousemove', (e) => {
+                const rect = wrapper.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+                const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+
+                gsap.to(target, {
+                    x: x * 15,
+                    y: y * 15,
+                    duration: 0.4,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(arrow, {
+                    x: x * 6,
+                    y: y * 6,
+                    duration: 0.4,
+                    ease: "power2.out"
+                });
+            });
+
+            wrapper.addEventListener('mouseleave', () => {
+                gsap.to([target, arrow], {
+                    x: 0,
+                    y: 0,
+                    duration: 0.6,
+                    ease: "elastic.out(1, 0.5)"
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
